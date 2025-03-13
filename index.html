@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fotogalerie z Vysočiny</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background-color: #3a7d44;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-gap: 20px;
+            margin-bottom: 2rem;
+        }
+        
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            height: 250px;
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-item:hover .gallery-caption {
+            transform: translateY(0);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            overflow: auto;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            margin: auto;
+        }
+        
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .modal-caption {
+            color: white;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+            position: absolute;
+            bottom: 20px;
+        }
+        
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            padding: 15px;
+            border-radius: 50%;
+        }
+        
+        .prev {
+            left: 20px;
+        }
+        
+        .next {
+            right: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            background-color: #333;
+            color: white;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .gallery-item {
+                height: 150px;
+            }
+            
+            .nav-button {
+                padding: 10px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Fotogalerie z Vysočiny</h1>
+            <p>Krásná místa a okamžiky z Vysočiny</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="gallery" id="gallery">
+            <!-- Fotky budou přidány pomocí JavaScriptu -->
+        </div>
+    </div>
+    
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImg">
+        <div class="modal-caption" id="caption"></div>
+        <button class="nav-button prev" id="prev">&#10094;</button>
+        <button class="nav-button next" id="next">&#10095;</button>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Fotogalerie z Vysočiny | Vytvořeno v Javorku</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Pole s daty o fotografiích
+        const photos = [
+            {
+                src: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Vyso%C4%8Dina_Region_in_Czech_Republic.svg/1200px-Vyso%C4%8Dina_Region_in_Czech_Republic.svg.png",
+                caption: "Mapa Vysočiny"
+            },
+            {
+                src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Telc_Marktplatz_UNESCO.JPG/1200px-Telc_Marktplatz_UNESCO.JPG",
+                caption: "Náměstí v Telči"
+            },
+            {
+                src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Zelena_hora_u_Zdaru_nad_Sazavou.jpg/1200px-Zelena_hora_u_Zdaru_nad_Sazavou.jpg",
+                caption: "Zelená hora u Žďáru nad Sázavou"
+            },
+            {
+                src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Trebic_Jewish_Quarter-UNESCO.jpg/1200px-Trebic_Jewish_Quarter-UNESCO.jpg",
+                caption: "Židovská čtvrť v Třebíči"
+            },
+            {
+                src: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Pernstejn_hrad.jpg/1200px-Pernstejn_hrad.jpg",
+                caption: "Hrad Pernštejn"
+            },
+            {
+                src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Jihlava_-_Horn%C3%AD_n%C3%A1m%C4%9Bst%C3%AD.jpg/1200px-Jihlava_-_Horn%C3%AD_n%C3%A1m%C4%9Bst%C3%AD.jpg",
+                caption: "Jihlava - Horní náměstí"
+            },
+            {
+                src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Nove_Mesto_na_Morave_-_namesti.jpg/1200px-Nove_Mesto_na_Morave_-_namesti.jpg",
+                caption: "Náměstí v Novém Městě na Moravě"
+            },
+            {
+                src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Havl%C3%AD%C4%8Dk%C5%AFv_Brod_-_n%C3%A1m%C4%9Bst%C3%AD.jpg/1200px-Havl%C3%AD%C4%8Dk%C5%AFv_Brod_-_n%C3%A1m%C4%9Bst%C3%AD.jpg",
+                caption: "Náměstí v Havlíčkově Brodě"
+            },
+            {
+                src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Lipnice_nad_S%C3%A1zavou%2C_hrad.jpg/1200px-Lipnice_nad_S%C3%A1zavou%2C_hrad.jpg",
+                caption: "Hrad Lipnice nad Sázavou"
+            }
+        ];
+         // Naplnění galerie fotografiemi
+        const gallery = document.getElementById('gallery');
+        
+        photos.forEach((photo, index) => {
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+            item.innerHTML = `
+                <img src="${photo.src}" alt="${photo.caption}">
+                <div class="gallery-caption">${photo.caption}</div>
+            `;
+            item.addEventListener('click', () => openModal(index));
+            gallery.appendChild(item);
+        });
+        
+        // Modal functionality
+        const modal = document.getElementById('myModal');
+        const modalImg = document.getElementById('modalImg');
+        const captionText = document.getElementById('caption');
+        const closeBtn = document.getElementsByClassName('close')[0];
+        const prevBtn = document.getElementById('prev');
+        const nextBtn = document.getElementById('next');
+        
+        let currentIndex = 0;
+        
+        function openModal(index) {
+            modal.style.display = 'flex';
+            modalImg.src = photos[index].src;
+            captionText.innerHTML = photos[index].caption;
+            currentIndex = index;
+        }
+        
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+        
+        prevBtn.onclick = function() {
+            currentIndex = (currentIndex - 1 + photos.length) % photos.length;
+            modalImg.src = photos[currentIndex].src;
+            captionText.innerHTML = photos[currentIndex].caption;
+        }
+        
+        nextBtn.onclick = function() {
+            currentIndex = (currentIndex + 1) % photos.length;
+            modalImg.src = photos[currentIndex].src;
+            captionText.innerHTML = photos[currentIndex].caption;
+        }
+        
+        // Zavření modalu kliknutím mimo obrázek
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Klávesové zkratky
+        document.addEventListener('keydown', function(event) {
+            if (modal.style.display === 'flex') {
+                if (event.key === 'ArrowLeft') {
+                    prevBtn.click();
+                } else if (event.key === 'ArrowRight') {
+                    nextBtn.click();
+                } else if (event.key === 'Escape') {
+                    closeBtn.click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
